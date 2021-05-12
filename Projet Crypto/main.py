@@ -1,4 +1,7 @@
 import tkinter as tk
+from tkinter import Button, filedialog
+from tkinter import simpledialog    
+
 
 racine= tk.Tk()
 racine.title('racine')
@@ -6,28 +9,18 @@ racine.title('racine')
 texte=""
 solution=" "
 
-def defilGest(L):
-    op, deCombien = L[0], L[1]
-
-    if op == 'scroll':
-        units = L[2]
-        saisi.xview_scroll(deCombien, units)
-    elif op == 'moveto':
-        saisi.xview_moveto(deCombien)
-
 
 def Met1():
     """permet de décoder le texte 1, qui est un code de césar dont la clé est 1"""
     global texte, resultat
     resultat.delete(0)
-    rep = ""
     clé = 1
     texte= entree_texte.get()
     for i in range(len(texte)):
         if not ord(texte[i])>96 or not ord(texte[i])<123:
             resultat.insert(i,texte[i])
         else:    
-            num_lettre= (ord(texte[i])%26)-97
+            num_lettre= ord(texte[i])-97
             nvl_lettre= chr((num_lettre+clé)%26+97)
             resultat.insert(i,nvl_lettre)
 
@@ -86,16 +79,71 @@ def Met2():
             resultat.insert(i,nvl_lettre)
 
 
+def quitter(x):
+    x.destroy()
+
+
+def affiche(texte):
+    """affiche le résultat de Met4"""
+    root=tk.Tk()
+    root.title('Met4')
+
+    reponsem4 = tk.Label(root, text= texte)
+    reponsem4.grid(row=0, column=0)
+
+    boutton_quitt= tk.Button(root, text='Quitter', command=lambda: quitter(root))
+    boutton_quitt.grid(row=0, column=1)
+
+
+def decryptV(lettre, x, cle):
+    """permet de décrypter un code de vigenere, avec une lettre, 
+    et la place de la lettre décodante dans la clé et la clé."""
+    num_lettre = ord(lettre)-97
+    lcode= ord(cle[x])-97
+    nvl_lettre= chr((num_lettre-lcode)%26+ 97)
+    return nvl_lettre
+
+
+
 def Met3():
     """permet dedécoder le texte3"""
-    
-    pass
+    resultat= ""
+    rep=""
+    cle= 'clez'
+    texte= entree_texte.get()
+    cpt= 0
+    for i in range(len(texte)):
+        if not ord(texte[i])>96 or not ord(texte[i])<123:
+            resultat += texte[i]
+        else:
+            nvl_lettre= decryptV(texte[i],(cpt%len(cle)) ,cle)
+            resultat += nvl_lettre
+        cpt+= 1
+    affiche(resultat)
 
 
 def Met4():
-    """inch"""
-    pass
-
+    """Set a décoder le texte 4"""
+    resultat.delete(0)
+    lines = open("Texte 4.txt", "r")
+    key = "bravez"
+    newText = ""
+    dclcle= [1, 0, 0, 2, 4, 5, 0, 3, 4, 5, 0, 4, 5, 0, 4, 5, 1, 5, 0]
+    for line in lines:
+        comptel=0
+        line = line[::-1]
+        newLine = ""
+        cpt = 0
+        for letter in line:
+            if not ord(letter) > 96 or not ord(letter) < 123:
+                newLine += letter
+            else:
+                newLine += decryptV(letter, cpt % len(key), key)
+            cpt += 1
+        key = key[len(key) - int(dclcle[comptel])] + key[:(len(key) -int(dclcle[comptel]))]
+        newText += newLine + "\n" 
+        comptel +=1
+    affiche(newText)
 
 
 entree_texte = tk.Entry(racine, width = 50, font = ("helvetica", "20"))
@@ -122,11 +170,10 @@ label_dech.grid(row = 3, column = 4)
 
 
 resultat=tk.Entry(racine,width = 50, font = ("helvetica", "20"), text=solution)
-resultat.grid(row=3,column=0, columnspan=3, sticky='nsew')
+resultat.grid(row=3,column=0, columnspan=3)
 
-resultatDefil = tk.Scrollbar(racine, orient='horizontal', command= defilGest)
-resultatDefil.grid(row=4, column=0, columnspan=3, sticky='nsew')
-resultat['xscrollcommand']= resultatDefil.set
 
+boutquitterracine= tk.Button(racine, text= "Quitter", command=lambda :quitter(racine))
+boutquitterracine.grid(row=4, column= 2)
 
 racine.mainloop()
